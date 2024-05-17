@@ -1,0 +1,84 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Dr. Feet</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="shoes">
+                <span class="oi oi-cart" aria-hidden="true"></span> Papuča
+            </NavLink>
+        </div>
+      @*   <div class="nav-item px-3">
+            <NavLink class="nav-link" href="calculations">
+                <span class="oi oi-cart" aria-hidden="true"></span> Normative Calculations
+            </NavLink>
+        </div> *@
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="tops">
+                <span class="oi oi-brush" aria-hidden="true"></span> Gornjište
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="purposes">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Korigirano gornjište
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="linings">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Podstava
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="soles">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Potplat
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="materials">
+                <span class="oi oi-brush" aria-hidden="true"></span> Material
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="colors">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Boja
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="suppliers">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Suppliers
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="decorations">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Decorations
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="miscellaneouses">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Miscellaneouses
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

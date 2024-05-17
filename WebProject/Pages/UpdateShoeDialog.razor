@@ -1,0 +1,148 @@
+﻿@using Domain.Entities
+@using Domain.Validations
+@using Domain.ViewModels
+@using FluentValidation
+@using System
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Logging
+@inject Application.Services.ShoeService shoeService
+@inject Application.Services.ImageService imageService
+@inject ISnackbar Snackbar
+
+@inject Application.Services.TopService topService
+@inject Application.Services.LiningService liningService
+@inject Application.Services.SoleService soleService
+@inject Application.Services.PurposeService purposeService
+@inject Application.Services.ColorService colorService
+
+<MudDialog>
+    <DialogContent>
+        @if (modifiedShoe?.ImageData is not null)
+        {
+            <MudImage Src="@ImageData" @bind-Value="modifiedShoe.ImageData" Height=200 Width=300 Elevation="25" Class="rounded-lg" />            
+        }
+        <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+            <ButtonTemplate>
+                <MudFab HtmlTag="label"
+                        Color="Color.Secondary"
+                        StartIcon="@Icons.Material.Filled.Image"
+                        Label="Load picture"
+                        for="@context.Id" />
+            </ButtonTemplate>
+        </MudFileUpload>
+        <!-- Add your form controls for modifying the shoe here -->
+        <MudTextField @bind-Value="modifiedShoe.Code" Required="true" RequiredError="Code is required!" Label="Code" />
+        <MudTextField @bind-Value="modifiedShoe.Name" Required="true" RequiredError="Name is required!" Label="Name" />
+        <MudTextField @bind-Value="modifiedShoe.Description" Label="Description" />
+
+        <MudSelect @bind-Value="modifiedShoe.TopId" Label="Tops">
+            <MudSelectItem Value="0" Disabled="true">Select top</MudSelectItem>
+            @foreach (var item in tops)
+            {
+                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect @bind-Value="modifiedShoe.LiningId" Label="Lining">
+            <MudSelectItem Value="0" Disabled="true">Select lining</MudSelectItem>
+            @foreach (var item in linings)
+            {
+                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect @bind-Value="modifiedShoe.SoleId" Label="Sole">
+            <MudSelectItem Value="0" Disabled="true">Select sole</MudSelectItem>
+            @foreach (var item in soles)
+            {
+                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect @bind-Value="modifiedShoe.PurposeId" Label="Purpose">
+            <MudSelectItem Value="0" Disabled="true">Select purpose</MudSelectItem>
+            @foreach (var item in purposes)
+            {
+                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect @bind-Value="modifiedShoe.ColorTypeId" Label="Color Type">
+            <MudSelectItem Value="0" Disabled="true">Select color</MudSelectItem>
+            @foreach (var item in colorTypes)
+            {
+                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save Changes</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int ShoeId { get; set; }
+    private Shoe? modifiedShoe;
+    private List<Domain.Entities.Top> tops = new();
+    private List<Domain.Entities.Lining> linings = new();
+    private List<Domain.Entities.Sole> soles = new();
+    private List<Domain.Entities.Purpose> purposes = new();
+    private List<Domain.Entities.ColorType> colorTypes = new();
+    private string? ImageData; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        modifiedShoe = await shoeService.FindShoe(ShoeId);
+        if (modifiedShoe?.ImageData is not null)
+        {
+            ImageData = "data:image/png;base64, " + Convert.ToBase64String(modifiedShoe.ImageData);          
+        }
+
+
+        // Populate dropdown options
+        tops = await topService.GetAllTops();
+        linings = await liningService.GetAllLinings();
+        soles = await soleService.GetAllSoles();
+        purposes = await purposeService.GetAllApplications();
+        colorTypes = await colorService.GetAllColors();
+    }
+
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        var validator = new ShoeValidator();
+        var result = validator.Validate(modifiedShoe);
+
+
+        if (result.IsValid)
+        {
+            var fileContent = await imageService.UploadImage(file);
+
+            ImageData = "data:image/png;base64, " + Convert.ToBase64String(fileContent);
+
+            modifiedShoe.ImageData = fileContent;
+        }
+        else
+        {
+            var errors = result.Errors.FirstOrDefault()?.ErrorMessage;
+            if (!string.IsNullOrWhiteSpace(errors))
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add(errors, MudBlazor.Severity.Error);               
+            }
+        }
+    }
+
+
+
+    async void Submit()
+    {
+        bool success = await shoeService.ModifyShoe(modifiedShoe);  
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}
