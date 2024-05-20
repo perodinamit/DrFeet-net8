@@ -11,11 +11,10 @@
 <MudTable Elevation="5" @ref="@_table" Items="@suppliers" RowsPerPage="10" Hover="true" LoadingProgressColor="Color.Info" Filter="new Func<Domain.Entities.Supplier, bool>(Search)" @bind-technology="supplier">
 
     <ToolBarContent>
-@*         @if (visibleToAdmin)
+        @if (visibleToAdmin)
         {
             <MudButton Style="margin-top:20px;margin-right:20px;" Variant="MudBlazor.Variant.Filled" @onclick="@(()=>AddSupplier())" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" IconSize="Size.Large">New</MudButton>
-        } *@
-            <MudButton Style="margin-top:20px;margin-right:20px;" Variant="MudBlazor.Variant.Filled" @onclick="@(()=>AddSupplier())" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" IconSize="Size.Large">New</MudButton>
+        }
 
         <MudSpacer />
         <MudText Typo="Typo.h6">Suppliers</MudText>

@@ -199,14 +199,12 @@
         var authState = await authenticationState;
         var user = authState?.User;
 
-        // if (user?.Identity?.IsAuthenticated == true && user.IsInRole("Admin"))
-        // {
-        //     return true;
-        // }
+        if (user?.Identity?.IsAuthenticated == true && user.IsInRole("Admin"))
+        {
+            return true;
+        }
 
-        // return false;
-
-        return true;
+        return false;
     }
 
     private async Task FetchCalculationItems(Domain.Entities.Calculation calculation)

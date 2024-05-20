@@ -11,11 +11,10 @@
 <MudTable Elevation="5" @ref="@_table" Items="@materials" RowsPerPage="10" Hover="true" LoadingProgressColor="Color.Info" Filter="new Func<Domain.Entities.Material, bool>(Search)" @bind-technology="material">
 
     <ToolBarContent>
-@*         @if (visibleToAdmin)
+        @if (visibleToAdmin)
         {
             <MudButton Style="margin-top:20px;" Variant="MudBlazor.Variant.Filled" @onclick="@(()=>AddMaterial())" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" IconSize="Size.Large">New</MudButton>
-        } *@
-            <MudButton Style="margin-top:20px;" Variant="MudBlazor.Variant.Filled" @onclick="@(()=>AddMaterial())" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" IconSize="Size.Large">New</MudButton>
+        }
 
         <MudSpacer />
         <MudText Typo="Typo.h6">Materials</MudText>
@@ -82,14 +81,13 @@
         var authState = await authenticationState;
         var user = authState?.User;
 
-        // if (user?.Identity?.IsAuthenticated == true && user.IsInRole("Admin"))
-        // {
-        //     return true;
-        // }
+        if (user?.Identity?.IsAuthenticated == true && user.IsInRole("Admin"))
+        {
+            return true;
+        }
 
-        // return false;
+        return false;
 
-        return true;
     }
 
     private async Task OpenDialog(int id, string name)

@@ -21,8 +21,8 @@
         {
             <MudImage Src="@ImageData" @bind-Value="modifiedShoe.ImageData" Height=200 Width=300 Elevation="25" Class="rounded-lg" />            
         }
-@*         @if (visibleToAdmin)
-        { *@
+        @if (visibleToAdmin)
+        {
             <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
                 <ButtonTemplate>
                     <MudFab HtmlTag="label"
@@ -32,7 +32,7 @@
                             for="@context.Id" />
                 </ButtonTemplate>
             </MudFileUpload>
-        @* } *@
+        }
         <!-- Add your form controls for modifying the shoe here -->
         <MudTextField @bind-Value="modifiedShoe.Code" Required="true" RequiredError="Code is required!" Label="Code" />
         <MudTextField @bind-Value="modifiedShoe.Name" Required="true" RequiredError="Name is required!" Label="Name" />
@@ -108,12 +108,10 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-@*         @if (visibleToAdmin)
+        @if (visibleToAdmin)
         {
             <MudButton Color="Color.Primary" OnClick="Submit">Save Changes</MudButton>
-        } *@
-            <MudButton Color="Color.Primary" OnClick="Submit">Save Changes</MudButton>
-
+        }
     </DialogActions>
 </MudDialog>
 
