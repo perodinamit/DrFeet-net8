@@ -166,7 +166,13 @@
                 FullWidth = true,
                 CloseOnEscapeKey = true
             };
-        var dialog = DialogService.Show<AddShoeDialog>("Add New Shoe", options);
+
+        var parameters = new DialogParameters<UpdateShoeDialog>
+        {
+            { "visibleToAdmin", visibleToAdmin }
+        };
+
+        var dialog = DialogService.Show<AddShoeDialog>("Add New Shoe", parameters, options);
 
         var result = await dialog.Result;
 
