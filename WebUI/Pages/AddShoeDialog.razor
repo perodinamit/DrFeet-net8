@@ -1,13 +1,34 @@
-﻿@using Domain.Entities
+﻿@using Application.Services
+@using Domain.Entities
+@using Domain.Validations
 @inject Application.Services.ShoeService shoeService
 @inject Application.Services.TopService topService
 @inject Application.Services.LiningService liningService
 @inject Application.Services.SoleService soleService
 @inject Application.Services.PurposeService purposeService
 @inject Application.Services.ColorService colorService
+@inject Application.Services.ImageService imageService
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
+        @if (newShoe?.ImageData is not null)
+        {
+            <MudImage Src="@ImageData" @bind-Value="newShoe.ImageData" Height=200 Width=300 Elevation="25" Class="rounded-lg" />
+        }
+        @if (visibleToAdmin)
+        {
+            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+                <ButtonTemplate>
+                    <MudFab HtmlTag="label"
+                            Color="Color.Secondary"
+                            StartIcon="@Icons.Material.Filled.Image"
+                            Label="Load picture"
+                            for="@context.Id" />
+                </ButtonTemplate>
+            </MudFileUpload>
+        }
+
         <!-- Add your form controls for adding a new shoe here -->
         <MudTextField @bind-Value="newShoe.Code" Label="Code" />
         <MudTextField @bind-Value="newShoe.Name" Label="Name" />
@@ -103,15 +124,50 @@
     private List<Domain.Entities.Sole> soles = new();
     private List<Domain.Entities.Purpose> purposes = new();
     private List<Domain.Entities.ColorType> colorTypes = new();
+    [Parameter] public bool visibleToAdmin { get; set; } = false;
+    private string? ImageData;
+
 
     protected override async Task OnInitializedAsync()
     {
+        if (newShoe?.ImageData is not null)
+        {
+            ImageData = "data:image/png;base64, " + Convert.ToBase64String(newShoe.ImageData);
+        }
+
         tops = await topService.GetAllTops();
         linings = await liningService.GetAllLinings();
         soles = await soleService.GetAllSoles();
         purposes = await purposeService.GetAllApplications();
         colorTypes = await colorService.GetAllColors();
     }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        var validator = new ShoeValidator();
+        var result = validator.Validate(newShoe);
+
+
+        if (result.IsValid)
+        {
+            var fileContent = await imageService.UploadImage(file);
+
+            ImageData = "data:image/png;base64, " + Convert.ToBase64String(fileContent);
+
+            newShoe.ImageData = fileContent;
+        }
+        else
+        {
+            var errors = result.Errors.FirstOrDefault()?.ErrorMessage;
+            if (!string.IsNullOrWhiteSpace(errors))
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add(errors, MudBlazor.Severity.Error);
+            }
+        }
+    }
+
+
 
     async void Submit()
     {
