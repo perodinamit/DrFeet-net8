@@ -1,5 +1,4 @@
 ﻿using Domain.Entities;
-//using Infrastructure.Context;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,5 +26,9 @@ namespace Infrastructure.Context
         public DbSet<Calculation> Calculations { get; set; }
         public DbSet<CalculationItem> CalculationItems { get; set; }
         public DbSet<Miscellaneous> Miscellaneouses { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+
+
     }
 }

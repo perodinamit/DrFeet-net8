@@ -14,6 +14,14 @@ namespace Application.Services
             this.context = context;
         }
 
+        public async Task<List<Calculation>> GetAllCalculations()
+        {
+            return await context.Calculations
+                .Include(x => x.Shoe)
+                .Include(x => x.CalculationItems)
+                .ToListAsync();
+        }
+
 
         public async Task<List<Calculation>> GetAllCalculations(int id)
         {
@@ -47,6 +55,7 @@ namespace Application.Services
         {
             var calculation = await context.Calculations
                .Include(x => x.CalculationItems)
+               .Where(x => x.Id == id)
                .AsSplitQuery()
                .FirstOrDefaultAsync();
 

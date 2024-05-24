@@ -9,11 +9,10 @@ namespace Application.Services
     public class ShoeService : IShoeRepository
     {
         private readonly ApplicationDbContext context;
-        private readonly ICalculationRepository calculationRepository;
-        public ShoeService(ApplicationDbContext context, ICalculationRepository calculationRepository)
+
+        public ShoeService(ApplicationDbContext context)
         {
             this.context = context;
-            this.calculationRepository = calculationRepository;
         }
 
 
