@@ -1,0 +1,195 @@
+﻿@page "/orders"
+@using Domain.Entities
+@using WebUI.Pages.Order
+
+@inject Application.Services.OrderService orderService
+@inject Application.Services.SupplierService supplierService
+@inject MudBlazor.ISnackbar snackBar
+@inject IDialogService DialogService
+
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add new order</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <div class="row">
+            <div class="col-md-6">
+                <MudTextField @bind-Value="order.Number" Label="Order number" />
+            </div>
+        </div>
+        <MudSpacer />
+        <div class="row">
+            <div class="col-md-6">
+                <MudSelect @bind-Value="order.SupplierId" Label="Supplier">
+                    <MudSelectItem Value="0" Disabled="true">Select supplier</MudSelectItem>
+                    @foreach (var item in suppliers)
+                    {
+                        <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        </div>
+        <MudSpacer />
+        <div class="row">
+            <div class="col-md-6">
+                <MudTextField @bind-Value="order.Description" Variant="MudBlazor.Variant.Outlined" Lines="3" Label=" Description" />
+            </div>
+        </div>
+        <MudSpacer />
+
+        <div class="row">
+            <div class="col-md-6">
+                <MudDatePicker @bind-Date="order.OrderDate" Editable="true" Mask="@(new DateMask("dd.MM.yyyy"))" DateFormat="dd.MM.yyyy" Label="Order date"></MudDatePicker>
+            </div>
+        </div>
+        <MudSpacer />
+
+        <MudButton Variant="MudBlazor.Variant.Filled" Color="Color.Success" OnClick="Save" Disabled="string.IsNullOrWhiteSpace(order.Number)">Save</MudButton>
+
+    </MudCardContent>
+</MudCard>
+
+<MudTable Elevation="5" @ref="@_table" Items="@orders" RowsPerPage="10" Hover="true" LoadingProgressColor="Color.Info" Filter="new Func<Domain.Entities.Order, bool>(Search)" @bind-technology="order">
+    <HeaderContent>
+        <MudTh hidden>Id</MudTh>
+        <MudTh>Order number</MudTh>
+        <MudTh>Supplier</MudTh>
+        <MudTh>Order date</MudTh>
+        <MudTh>Is active</MudTh>
+        <MudTh>Akcije</MudTh>
+
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
+        <MudTd DataLabel="SupplierName">@context.Number</MudTd>
+        <MudTd DataLabel="SupplierName">@context.Supplier.Name</MudTd>
+        <MudTd DataLabel="OrderDate">@context.OrderDate.Value.ToString("dd.MM.yyyy")</MudTd>
+        <MudTd DataLabel="IsActive">
+            @if (context.IsActive)
+            {
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Done" Size="Size.Small" IconSize="Size.Small"></MudFab>
+
+            }
+            else
+            {
+
+                <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Block" Size="Size.Small" IconSize="Size.Small"></MudFab>
+
+            }
+        </MudTd>
+        <MudTd DataLabel="">
+            <MudTooltip Text="Open Order Items" Arrow="true" Placement="Placement.Left">
+                <MudFab @onclick="@(()=>OpenOrderItems(context.Id))" Variant="MudBlazor.Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Assignment" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            </MudTooltip>
+            <MudTooltip Text="Activate / Deactivate Order" Arrow="true" Placement="Placement.Right">
+                <MudFab @onclick="@(()=>ActivateDeactivateOrder(context.Id, context.IsActive))" Variant="MudBlazor.Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.ImportExport" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            </MudTooltip>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudPagination SelectedChanged="PageChanged" Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)" Class="pa-4" />
+    </PagerContent>
+</MudTable>
+
+
+@code {
+    private List<Domain.Entities.Order> orders = new();
+    private Domain.Entities.Order order = new();
+    private List<Domain.Entities.Supplier> suppliers = new();
+    DateTime? date = DateTime.Today;
+    private MudTable<Domain.Entities.Order> _table;
+    private string searchString = "";
+    private OrderItem orderItem = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        suppliers = await supplierService.GetAllSuppliers();
+        orders = await orderService.GetAllOrders();
+    }
+
+
+    private async Task Save()
+    {
+        var orderSaved = await orderService.AddOrder(order);
+
+        if (orderSaved)
+        {
+            snackBar.Add("Order saved", Severity.Success);
+
+            await RefreshTable();
+        }
+        else
+        {
+            snackBar.Add("Something went wrong", Severity.Error);
+        }
+    }
+
+    private async Task RefreshTable()
+    {
+        suppliers = await supplierService.GetAllSuppliers();
+        StateHasChanged(); // This line is needed to notify Blazor that the state has changed and it should re-render the component
+    }
+
+
+    private bool Search(Domain.Entities.Order order)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+        {
+            return true;
+        }
+
+        var searchStringLower = searchString.ToLower();
+
+        if (order.Number.ToLower().Contains(searchStringLower) || order.Number.ToLower().Contains(searchStringLower) || order.Supplier.Name.ToLower().Contains(searchStringLower))
+        {
+            return true;
+        }
+        return false;
+    }
+
+
+
+
+    private async Task OpenOrderItems(int id)
+    {
+        var options = new MudBlazor.DialogOptions { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, DisableBackdropClick = true };
+
+        var parameters = new DialogParameters<UpdateShoeDialog>
+        {
+            { "OrderId", id },
+        };
+
+        var dialog = DialogService.Show<OrderItemsModal>("", parameters, options);
+
+        var result = await dialog.Result;
+
+        await RefreshTable();
+    }
+
+    private async Task ActivateDeactivateOrder(int id, bool isActive)
+    {
+        var options = new MudBlazor.DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, DisableBackdropClick = true };
+
+        var parameters = new DialogParameters<UpdateShoeDialog>
+        {
+            { "OrderId", id },
+            { "IsActive", isActive },
+        };
+
+        var dialog = DialogService.Show<ActivateDeactivateOrderModal>("", parameters, options);
+
+        var result = await dialog.Result;
+
+        await RefreshTable();
+    }
+
+    private void PageChanged(int i)
+    {
+        _table.NavigateTo(i - 1);
+    }
+
+}

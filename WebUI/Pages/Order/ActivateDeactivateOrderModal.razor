@@ -1,0 +1,48 @@
+﻿@inject Application.Services.OrderService orderService
+
+<MudDialog>
+    <DialogContent>
+        <p>
+            Activate or deactivate order?
+        </p>
+        @if (IsActive)
+        {
+            <p>
+                Click to deactivate <MudCheckBox @bind-Value="IsActive" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Block" UncheckedIcon="@Icons.Material.Filled.Done"></MudCheckBox>
+            </p>
+        }
+        else
+        {
+            <p>
+                Click to activate <MudCheckBox @bind-Value="IsActive" Color="Color.Secondary" CheckedIcon="@Icons.Material.Filled.Block" UncheckedIcon="@Icons.Material.Filled.Done"></MudCheckBox>
+            </p>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+
+}
+
+
+@code {
+    [Parameter] public int OrderId { get; set; }
+    [Parameter] public bool IsActive { get; set; }
+
+    public bool CheckBox1 { get; set; } = true;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    async Task Submit()
+    {
+        var order = await orderService.GetOrderById(OrderId);
+        order.IsActive = IsActive;
+        await orderService.UpdateOrder(order);
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

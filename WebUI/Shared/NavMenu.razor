@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿ @inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Dr. Feet</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -59,16 +61,53 @@
                 <span class="oi oi-dashboard" aria-hidden="true"></span> Razno
             </NavLink>
         </div>
+        @if (authenticated)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="orders">
+                    <span class="oi oi-book" aria-hidden="true"></span> Narudžbe
+                </NavLink>
+            </div>        
+        }
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
+    private bool visibleToAdmin { get; set; } = false;
+    private bool authenticated;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override void OnInitialized()
+    {
+        Task<AuthenticationState> _currentAuthenticationStateTask;
+
+        AuthenticationStateProvider.AuthenticationStateChanged +=
+                                       OnAuthenticationStateChanged;
+
+        _currentAuthenticationStateTask =
+          AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        OnAuthenticationStateChanged(_currentAuthenticationStateTask);
+    }
+
+    private void OnAuthenticationStateChanged
+                  (Task<AuthenticationState> authenticationStateTask)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var authState = await authenticationStateTask;
+            var user = authState.User;
+
+
+            authenticated = user.Identity?.IsAuthenticated ?? false;
+            StateHasChanged();
+        });
     }
 }

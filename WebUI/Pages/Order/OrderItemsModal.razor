@@ -1,0 +1,144 @@
+﻿@using System.Globalization
+@using WebUI.Pages.Shared
+@inject Application.Services.OrderItemService orderItemService
+@inject Application.Services.OrderService orderService
+@inject Application.Services.CalculationService calculationService
+@inject MudBlazor.ISnackbar snackBar
+@inject IDialogService DialogService
+
+
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add / Edit New Order Items</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <div class="row">
+            <div class="col-md-6">
+                <MudSelect @bind-Value="orderItem.CalculationId" Label="Shoe">
+                    <MudSelectItem Value="0" Disabled="true">Select shoe</MudSelectItem>
+                    @foreach (var item in calculations)
+                    {
+                        <MudSelectItem Value="@item.Id">@item.Shoe?.Code - @item.Shoe?.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <MudNumericField @bind-Value="orderItem.Quantity" Label="Quantity" Format="N0" Culture="@_cultureInfo" HideSpinButtons="true" Variant="MudBlazor.Variant.Text"></MudNumericField>
+            </div>
+        </div>
+        <MudButton Style="margin-top:10px;" Variant="MudBlazor.Variant.Filled" Color="Color.Success" OnClick="Save">Save</MudButton>
+    </MudCardContent>
+</MudCard>
+<MudCard>
+    <MudTable Elevation="5" @ref="@_table" Items="@orderItems" RowsPerPage="5" Hover="true" LoadingProgressColor="Color.Info" @bind-technology="orderItem">
+        <HeaderContent>
+            <MudTh hidden>Id</MudTh>
+            <MudTh style="font-weight: bold;">Shoe</MudTh>
+            <MudTh style="font-weight: bold;">Quantity</MudTh>
+            <MudTh style="font-weight: bold;">Price per item</MudTh>
+            <MudTh style="font-weight: bold;">Delete</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
+            <MudTd DataLabel="Calculation.Shoe.Name">@context.Calculation.Shoe.Name</MudTd>
+            <MudTd DataLabel="context.Quantity">@context.Quantity</MudTd>
+            <MudTd DataLabel="Calculation.Price">@context.Calculation.Price</MudTd>
+            <MudTd DataLabel="">
+                <MudTooltip Text="Delete" Arrow="true" Placement="Placement.Left">
+                    <MudFab @onclick="@(()=>OpenDialog(context.Id, context.Calculation?.Shoe?.Name))" Variant="MudBlazor.Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudPagination SelectedChanged="PageChanged" Count="@((_table.GetFilteredItemsCount() + _table.RowsPerPage - 1) / _table.RowsPerPage)" Class="pa-4" />
+        </PagerContent>
+        <FooterContent>
+            <MudTFootRow Class="bold-text">
+            </MudTFootRow>
+            <MudTFootRow IsCheckable="true">
+                <MudTd colspan="5" style="font-weight: bold;">Total quantity for this order: @totalSum</MudTd>
+            </MudTFootRow>
+        </FooterContent>
+    </MudTable>
+
+</MudCard>
+
+@code {
+    [Parameter] public int OrderId { get; set; }
+    private List<Domain.Entities.OrderItem> orderItems = new();
+    private Domain.Entities.OrderItem orderItem = new();
+    private Domain.Entities.Order order = new();
+    private MudTable<Domain.Entities.OrderItem> _table;
+    private List<Domain.Entities.CalculationItem> calculationItems = new();
+    private List<Domain.Entities.Calculation> calculations = new();
+    private CultureInfo _cultureInfo = CultureInfo.GetCultureInfo("hr-HR");
+    private int totalSum;
+
+    protected override async Task OnInitializedAsync()
+    {
+        calculations = await calculationService.GetAllCalculations();
+        orderItems = await orderItemService.GetOrderItemsForOrder(OrderId);
+
+        totalSum = orderItems.Sum(x => x.Quantity);
+
+    }
+
+
+    private async Task Save()
+    {
+        orderItem.OrderId = OrderId;
+        // orderItem.Price = orderItem.Calculation.Price * orderItem.Quantity; // orderItem.Calculation.Price
+        await orderItemService.SaveOrderItem(orderItem);
+
+        var updateOrder = await orderService.GetOrderById(OrderId);
+        var getAllOrderItemsForOrder = await orderItemService.GetOrderItemsForOrder(OrderId);
+
+        var total = getAllOrderItemsForOrder.Sum(item => item.Quantity);
+
+        updateOrder.TotalOrderQuantaty = total;
+        await orderService.UpdateOrder(updateOrder);
+
+        snackBar.Add("Order saved", Severity.Success);
+
+        orderItem = new();
+
+        await RefreshTable();
+    }
+
+
+    private async Task RefreshTable()
+    {
+        orderItems = await orderItemService.GetOrderItemsForOrder(OrderId);
+        totalSum = orderItems.Sum(x => x.Quantity);
+
+        StateHasChanged();
+    }
+
+    private async Task OpenDialog(int id, string name)
+    {
+        var options = new MudBlazor.DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, DisableBackdropClick = true };
+        var parameters = new DialogParameters { ["Data"] = $"{id.ToString()} - {name}" };
+        var dialog = DialogService.Show<DeleteModal>("Confirm delete", parameters, options);
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var response = await orderItemService.DeleteOrderItem(id);
+            snackBar.Add("Order item deleted", Severity.Success);
+        }
+
+
+        await RefreshTable();
+    }
+
+    private void PageChanged(int i)
+    {
+        _table.NavigateTo(i - 1);
+    }
+}

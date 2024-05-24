@@ -32,31 +32,52 @@ builder.Services.AddDefaultIdentity<IdentityUser>(
     options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
 builder.Services.AddScoped<IGenericRepository<Top>, TopRepository>();
 builder.Services.AddScoped<ITopRepository, TopRepository>();
+
 builder.Services.AddScoped<IGenericRepository<ColorType>, ColorRepository>();
 builder.Services.AddScoped<IColorRepository, ColorRepository>();
+
 builder.Services.AddScoped<IGenericRepository<Lining>, LiningRepository>();
 builder.Services.AddScoped<ILiningRepository, LiningRepository>();
+
 builder.Services.AddScoped<IGenericRepository<Sole>, SoleRepository>();
 builder.Services.AddScoped<ISoleRepository, SoleRepository>();
+
 builder.Services.AddScoped<IGenericRepository<Purpose>, PurposeRepository>();
 builder.Services.AddScoped<IPurposeRepository, PurposeRepository>();
+
 builder.Services.AddScoped<IGenericRepository<Decoration>, DecorationRepository>();
 builder.Services.AddScoped<IDecorationRepository, DecorationRepository>();
+
 builder.Services.AddScoped<IGenericRepository<Material>, MaterialRepository>();
 builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
+
 builder.Services.AddScoped<IGenericRepository<Supplier>, SupplierRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
-builder.Services.AddScoped<ICalculationRepository, CalculationService>();
+
 builder.Services.AddScoped<IGenericRepository<Miscellaneous>, MiscellaneousRepository>();
 builder.Services.AddScoped<IMiscellaneousRepository, MiscellaneousRepository>();
+
+builder.Services.AddScoped<IGenericRepository<Order>, OrderRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+//builder.Services.AddScoped<IGenericRepository<OrderItem>, OrderItemRepository>();
+//builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+builder.Services.AddScoped<OrderItemRepository>();
+builder.Services.AddScoped<OrderItemService>();
+
+builder.Services.AddScoped<ICalculationRepository, CalculationService>();
+
+
 
 
 builder.Services.AddScoped<TopService>();
@@ -72,6 +93,9 @@ builder.Services.AddScoped<MaterialService>();
 builder.Services.AddScoped<SupplierService>();
 builder.Services.AddScoped<CalculationService>();
 builder.Services.AddScoped<MiscellaneousService>();
+builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<OrderItemService>();
+
 
 builder.Services.AddMudServices();
 builder.Services.AddControllersWithViews();
