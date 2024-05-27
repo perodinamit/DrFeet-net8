@@ -110,7 +110,7 @@ QuestPDF.Settings.EnableCaching = true;
 var app = builder.Build();
 
 app
-    .MapHealthChecks("/health", new HealthCheckOptions()
+    .UseHealthChecks("/health", new HealthCheckOptions()
     {
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     });
