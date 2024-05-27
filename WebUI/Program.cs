@@ -12,12 +12,16 @@ using WebUI.Areas.Identity;
 using QuestPDF.Infrastructure;
 using System.Configuration;
 using Infrastructure.ErrorHandling;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
+
+builder.Services.AddHealthChecks();
 
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -104,6 +108,12 @@ QuestPDF.Settings.License = LicenseType.Community;
 QuestPDF.Settings.EnableCaching = true;
 
 var app = builder.Build();
+
+app
+    .MapHealthChecks("/health", new HealthCheckOptions()
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
