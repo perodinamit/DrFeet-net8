@@ -1,19 +1,18 @@
 using Application.Services;
 using Domain.Entities;
 using Domain.Repository;
+using HealthChecks.UI.Client;
 using Infrastructure.Context;
+using Infrastructure.ErrorHandling;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using QuestPDF.Infrastructure;
 using Serilog;
 using WebUI.Areas.Identity;
-using QuestPDF.Infrastructure;
-using System.Configuration;
-using Infrastructure.ErrorHandling;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +20,12 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
 
-builder.Services.AddHealthChecks();
 
 var configuration = builder.Configuration;
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -74,8 +74,6 @@ builder.Services.AddScoped<IMiscellaneousRepository, MiscellaneousRepository>();
 builder.Services.AddScoped<IGenericRepository<Order>, OrderRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
-//builder.Services.AddScoped<IGenericRepository<OrderItem>, OrderItemRepository>();
-//builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<OrderItemRepository>();
 builder.Services.AddScoped<OrderItemService>();
 
