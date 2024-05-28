@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace Domain.Entities
         public string Description { get; set; } = string.Empty;
         public string Color { get; set; } = string.Empty;
         public string Material { get; set; } = string.Empty;
+        [Column(TypeName = "decimal(6,2)")]
         public decimal Price { get; set; } = decimal.Zero;
         public string Normativ { get; set; } = string.Empty;
 

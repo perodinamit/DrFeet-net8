@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Domain.Entities
 {
     public class OrderItem
     {
@@ -8,6 +10,7 @@
         public int Quantity { get; set; }
         public int OrderId { get; set; }
         public Order Order { get; set; }
+        [Column(TypeName = "decimal(6,2)")]
         public decimal Price { get; set; }
         public DateTime AddedOn { get; set; } = DateTime.Now;
         public DateTime? ModifiedOn { get; set; }
