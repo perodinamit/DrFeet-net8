@@ -1,4 +1,5 @@
 ﻿using Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities
 {
@@ -9,6 +10,7 @@ namespace Domain.Entities
         public int MaterialId { get; set; }
         public Material? Material { get; set; }
         public Units? Units { get; set; }
+        [Column(TypeName = "decimal(6,2)")]
         public decimal? ExpensePerUnit { get; set; } = null!;
     }
 }
